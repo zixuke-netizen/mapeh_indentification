@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exhaustive MAPEH Identification Quiz</title>
+    <style>
+        :root {
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --primary: #1a365d;
+            --accent: #2b6cb0;
+            --correct: #2f855a;
+            --incorrect: #c53030;
+            --text: #2d3748;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .quiz-container {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 850px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #e2e8f0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--accent);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-card {
+            margin-bottom: 25px;
+        }
+
+        .question-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 18px;
+            color: var(--primary);
+            line-height: 1.4;
+        }
+
+        .input-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #cbd5e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent);
+        }
+
+        .feedback-message {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .feedback-correct {
+            background-color: #c6f6d5;
+            color: #22543d;
+        }
+
+        .feedback-incorrect {
+            background-color: #fed7d7;
+            color: #742a2a;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 25px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #2c5282;
+        }
+
+        .btn-secondary {
+            background-color: #718096;
+        }
+
+        .btn-secondary:hover {
+            background-color: #4a5568;
+        }
+
+        .btn:disabled {
+            background-color: #cbd5e0;
+            cursor: not-allowed;
+        }
+
+        .results-section {
+            text-align: center;
+            display: none;
+        }
+
+        .score-display {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--accent);
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div id="quiz-screen">
+        <h1>MAPEH Identification Quiz</h1>
+        <div class="subtitle">Fill-in-the-Blank Assessment (All Topics Included)</div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+
+        <div class="question-card">
+            <div class="question-title" id="question-text">Question loading...</div>
+            <div class="input-container">
+                <input type="text" id="user-input" placeholder="Type your answer here..." autocomplete="off">
+                <div id="feedback-message" class="feedback-message"></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <span id="question-counter">Question 1 of 100</span>
+            <div class="btn-group">
+                <button class="btn btn-secondary" id="submit-btn" onclick="checkAnswer()">Submit</button>
+                <button class="btn" id="next-btn" onclick="nextQuestion()" disabled>Next</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="results-screen" class="results-section">
+        <h1>Quiz Complete!</h1>
+        <p>Your final score is:</p>
+        <div class="score-display" id="final-score">0 / 100</div>
+        <p id="feedback-text"></p>
+        <button class="btn" onclick="restartQuiz()">Restart Quiz</button>
+    </div>
+</div>
+
+<script>
+const quizData = [
+    // --- LESSON 1: ART, MEDIA & CREATIVE INDUSTRIES ---
+    { question: "What Latin word meaning 'skill or craft' is the origin of the word 'Art'?", answer: ["ars"] },
+    { question: "What German term used in art definitions refers to the 'spirit of the times'?", answer: ["zeitgeist"] },
+    { question: "Painting, drawing, and sculpture belong to which category of Art Media?", answer: ["visual arts", "visual art"] },
+    { question: "Creative writing, poetry, prose, and dramatic scripts fall under which category of Art Media?", answer: ["literary arts", "literary art"] },
+    { question: "Music, dance, theater, and film fall under which category of Art Media?", answer: ["performing arts", "performing art"] },
+    { question: "The word 'Media' is the plural form of which Latin word meaning middle or intermediate?", answer: ["medium"] },
+    { question: "What is the oldest form of media, which includes newspapers, magazines, and books?", answer: ["print media", "print"] },
+    { question: "Information sent over airwaves or cables, such as television and radio, is known as:", answer: ["broadcast media", "broadcast"] },
+    { question: "The modern media landscape including social media, websites, blogs, and podcasts is called:", answer: ["digital media"] },
+    { question: "The ability to access, analyze, evaluate, and create media is defined as:", answer: ["media literacy"] },
+    { question: "An activity, content, or performance designed to provide amusement is called:", answer: ["entertainment"] },
+    { question: "The intentional, goal-oriented process of planning, conceiving, and organizing elements is called:", answer: ["design"] },
+    { question: "What is the 1st step of the Design Process?", answer: ["identify"] },
+    { question: "What is the 2nd step of the Design Process?", answer: ["research"] },
+    { question: "What is the 3rd step of the Design Process?", answer: ["ideate"] },
+    { question: "What is the 4th step of the Design Process?", answer: ["execute"] },
+    { question: "Any information formatted, stored, and consumed in a digital, machine-readable format is called:", answer: ["digital content"] },
+    { question: "Tangible and intangible items produced by a society that carry and communicate its values, history, and identity are:", answer: ["cultural products", "cultural product"] },
+    { question: "What does OPM stand for in the Philippine music industry?", answer: ["original philippines music", "original philippine music"] },
+    { question: "Which fast-growing music genre in the Philippines is specifically highlighted under OPM?", answer: ["pinoy pop", "p-pop", "ppop"] },
+    { question: "Which decades (e.g., 1950s-1960s) were known as the Golden Age of Philippine Cinema?", answer: ["1950s-1960s", "1950s to 1960s", "50s-60s"] },
+
+    // --- DIRECTORS, THEATER, ANIMATION & FASHION ---
+    { question: "Who directed the critically acclaimed 1975 film 'Maynila sa Kuko ng Liwanag'?", answer: ["lino brocka"] },
+    { question: "Who directed the 1982 film 'Himala' starring Nora Aunor?", answer: ["ishmael bernal"] },
+    { question: "Which National Artist for Cinema directed 'Noli Me Tangere' in 1961?", answer: ["gerardo de leon"] },
+    { question: "Which Philippine agency supports local filmmakers, promotes local films, and develops the film industry?", answer: ["fdcp", "film development council of the philippines"] },
+    { question: "Which Philippine government board reviews and classifies films and television programs?", answer: ["mtrcb", "movie and television review and classification board"] },
+    { question: "Who are considered the heart of theater on stage?", answer: ["performers", "performer", "actors"] },
+    { question: "Which theatrical process involves the creation of the script, dialogue, and structure?", answer: ["playwriting"] },
+    { question: "Who bridges the gap between the script and the stage in theater production?", answer: ["director", "the director"] },
+    { question: "Building the physical world of a play through environment design is called:", answer: ["scenic design"] },
+    { question: "Serious plays that explore deep human suffering belong to which genre?", answer: ["tragedy"] },
+    { question: "Lighthearted performances designed to amuse, evoke laughter, and poke fun belong to which genre?", answer: ["comedy"] },
+    { question: "Realistic plays focusing on serious, real-world issues belong to which genre?", answer: ["drama"] },
+    { question: "Which animation technique involves drawing every single frame by hand?", answer: ["traditional animation"] },
+    { question: "Which animation method involves digital models moved in 3D space using digital skeletons?", answer: ["3d computer animation", "3d animation"] },
+    { question: "Which animation technique physically manipulates real-world objects frame-by-frame?", answer: ["stop motion", "stop-motion"] },
+    { question: "Animating moving text, shapes, and logos is called:", answer: ["motion graphics"] },
+    { question: "What key feature does Gaming add to animation that allows users to control the action?", answer: ["interactivity"] },
+    { question: "What is the highest level of fashion, featuring exclusive, custom-fitted, hand-sewn garments?", answer: ["haute couture"] },
+    { question: "High-quality, designer clothing that is machine-made and sold finished is called:", answer: ["pret-a-porter", "prêt-à-porter", "ready to wear"] },
+    { question: "The largest fashion tier where trendy designs are rapidly manufactured for everyday consumers is:", answer: ["mass market"] },
+    { question: "Artistic expression that combines two or more different media is called:", answer: ["multimedia art"] },
+    { question: "Republic Act 11904 is known as the Philippine Creative Industries Development Act of what year?", answer: ["2022"] },
+    { question: "Which precursor movement in the mid-1970s featured bands like Hotdog and VST & Company?", answer: ["the manila sound", "manila sound"] },
+    { question: "During which era (Late 1970s-1980s) was the term OPM officially coined?", answer: ["the golden era of ballads", "golden era of ballads"] },
+    { question: "Which concert promoter is the primary engine behind stadium-level international acts in the Philippines?", answer: ["live nation"] },
+    { question: "Which concert promoter pioneered the K-Pop explosion in the Philippines, led by Happee Sy-Go?", answer: ["pulp live world", "pulp"] },
+    { question: "Which promoter produces a diverse mix of concert entertainment in the Philippines alongside Live Nation and PULP?", answer: ["wilbros live", "wilbros"] },
+    { question: "Which Filipino independent filmmaker is famous for realistic portrayals of society and poverty?", answer: ["brillante mendoza"] },
+    { question: "Which Filipino independent filmmaker is famous for extremely long-form films on Philippine history?", answer: ["lav diaz"] },
+    { question: "Who directed the independent film 'Fan Girl'?", answer: ["antoinette jadaone"] },
+    { question: "Which young-generation filmmaker directed the acclaimed thriller 'Birdshot'?", answer: ["mikhail red"] },
+    { question: "What historical film centers on General Antonio Luna?", answer: ["heneral luna"] },
+    { question: "Which Lav Diaz film won major international acclaim starring Charo Santos?", answer: ["ang babaeng humayo"] },
+    { question: "Which independent film combines hip-hop culture with social commentary?", answer: ["respeto"] },
+    { question: "What is the Philippines' most prominent festival for independent filmmakers?", answer: ["cinemalaya"] },
+    { question: "Who is known as the 'Grand Dame of Philippine Fashion' for promoting traditional textiles?", answer: ["patis tesoro"] },
+    { question: "Which designer is famous for blending contemporary fashion with traditional Filipino heritage?", answer: ["rajo laurel"] },
+    { question: "Who designed the world-famous 'Lava Gown' worn by Catriona Gray?", answer: ["mak tumang"] },
+    { question: "Which designer is recognized alongside Mak Tumang for elegant pageant and evening gowns?", answer: ["rian fernandez"] },
+
+    // --- LESSON 2: ELEMENTS, PRINCIPLES & PAINTERS ---
+    { question: "Lines that run flatly from left to right are called:", answer: ["horizontal lines", "horizontal line"] },
+    { question: "Lines that run straight up and down are called:", answer: ["vertical lines", "vertical line"] },
+    { question: "Lines that slant at an angle between horizontal and vertical are called:", answer: ["diagonal lines", "diagonal line"] },
+    { question: "Continuous coiling curved lines that expand or contract are called:", answer: ["spiral lines", "spiral line"] },
+    { question: "Short, sharp lines that turn abruptly are called:", answer: ["zigzag lines", "zigzag line"] },
+    { question: "Precise, mathematical figures defined by lines, curves, and points are called:", answer: ["geometric shapes", "geometric shape"] },
+    { question: "Flat, closed figures with only 2 dimensions (length and width) are:", answer: ["two-dimensional shapes", "2d shapes", "2d shape"] },
+    { question: "Solid objects that have depth in addition to length and width are:", answer: ["three-dimensional shapes", "3d shapes", "3d shape"] },
+    { question: "Irregular, free-flowing shapes inspired by nature are called:", answer: ["organic shapes", "organic shape"] },
+    { question: "Which scientist's work with glass prisms in the 1660s proved white light is composed of rainbow colors?", answer: ["sir isaac newton", "isaac newton", "newton"] },
+    { question: "Texture that can be physically felt by touching an artwork is called:", answer: ["actual texture"] },
+    { question: "Texture that only appears visual but cannot be physically felt is called:", answer: ["implied texture"] },
+    { question: "The lightness or darkness of a color is called:", answer: ["value"] },
+    { question: "In art composition, the empty area surrounding the main subject is called:", answer: ["negative space"] },
+    { question: "The area occupied by the main subject in artwork is called:", answer: ["positive space"] },
+    { question: "Which principle of design distributes visual weight equally on both sides?", answer: ["symmetrical balance"] },
+    { question: "Which balance type features elements spreading outward from a central point?", answer: ["radial balance"] },
+    { question: "Placing opposite elements together to create visual difference uses which principle of design?", answer: ["contrast"] },
+    { question: "Creating a focal point to attract the viewer's attention first is known as:", answer: ["emphasis"] },
+    { question: "Guiding the viewer's eye through an artwork is called:", answer: ["movement"] },
+    { question: "The repeated arrangement of visual elements in a predictable manner is:", answer: ["pattern"] },
+    { question: "The feeling that all parts of an artwork belong together seamlessly is:", answer: ["unity"] },
+    { question: "Who was known as the 'Grand Old Man of Philippine Art'?", answer: ["fernando amorsolo"] },
+    { question: "What technique of mastering natural sunlight was Fernando Amorsolo famous for?", answer: ["backlighting"] },
+    { question: "What is considered Fernando Amorsolo's most celebrated masterpiece painting?", answer: ["planting rice"] },
+    { question: "Which gold-medal-winning masterpiece by Juan Luna depicts dead gladiators being dragged into a basement?", answer: ["spoliarium"] },
+    { question: "Which lighter, impressionistic painting by Juan Luna depicts a woman in a French cafe?", answer: ["the parisian life"] },
+    { question: "Which painting by Juan Luna portrays the dramatic aftermath of the Egyptian queen's suicide?", answer: ["the death of cleopatra"] },
+    { question: "Which National Artist for Painting in 1973 revived the art of mural painting in the Philippines?", answer: ["carlos francisco", "botong francisco", "carlos botong francisco"] },
+    { question: "What mural by Botong Francisco portrays resistance against a Chinese warlord in 1574?", answer: ["the invasion of limahong"] },
+    { question: "A performance of a song using acoustic instruments to provide softer sounds is an:", answer: ["acoustic cover"] },
+    { question: "A visual communication tool designed to inform, advertise, or raise awareness is a:", answer: ["poster"] },
+    { question: "Which Quality Standard refers to the level of skill, care, precision, and technical quality of work?", answer: ["craftsmanship"] },
+    { question: "Platforms like Facebook and LinkedIn are categorized as what type of social media?", answer: ["social networking"] },
+    { question: "Platforms like Instagram, TikTok, and YouTube belong to what type of social media?", answer: ["media sharing"] },
+    { question: "Quick, short-form text update platforms like X (formerly Twitter) are called:", answer: ["microblogging"] },
+    { question: "Subscription video services like Netflix, Disney+, and Prime Video are known as:", answer: ["video-on-demand", "vod"] },
+
+    // --- LESSON 3 & 4: E-SPORTS, HEALTH & LAWS ---
+    { question: "Which 1962 computer game was created by Steve Russell and MIT programmers?", answer: ["spacewar"] },
+    { question: "Where was the 1972 'Intergalactic Spacewar Olympics' held?", answer: ["stanford university", "stanford"] },
+    { question: "Which company organized the major Space Invaders Championship in 1980?", answer: ["atari"] },
+    { question: "How long does the prenatal stage (pregnancy) typically last in months?", answer: ["9 months", "9"] },
+    { question: "How long does the postpartum phase after childbirth typically last in weeks?", answer: ["6 weeks", "6"] },
+    { question: "What serious condition involves high blood pressure accompanied by organ damage during pregnancy?", answer: ["preeclampsia"] },
+    { question: "An excess of which substance in the blood causes yellowing of skin/eyes in Neonatal Jaundice?", answer: ["bilirubin"] },
+    { question: "Childhood malnutrition manifesting as low height-for-age is known as:", answer: ["stunting"] },
+    { question: "Childhood malnutrition manifesting as low weight-for-height is known as:", answer: ["wasting"] },
+    { question: "Which nutrient is crucial before conception and through early pregnancy to prevent neural tube defects?", answer: ["folic acid"] },
+    { question: "The process of the uterus returning to its original size after childbirth is called:", answer: ["uterine involution"] },
+    { question: "What is the postpartum vaginal discharge/bleeding managed during recovery called?", answer: ["lochia"] },
+    { question: "Which law is RA 9262 (protecting women and children from abuse)?", answer: ["anti-vawc act", "vawc", "anti vawc act", "anti-vawc"] },
+    { question: "Which law is RA 7610 (protecting children against abuse and labor)?", answer: ["special protection of children against child abuse, exploitation and discrimination act", "child abuse law", "ra 7610"] },
+    { question: "Which law penalizes recruitment or adoption of women/children for illegal work (RA 9208 / RA 10364)?", answer: ["anti-trafficking in persons act", "anti trafficking in persons act"] },
+    { question: "Which law targets online sexual abuse of children (RA 11930)?", answer: ["anti-online sexual abuse or exploitation of children act", "aosaec"] },
+    { question: "Which law is RA 11148, focusing on maternal and newborn health?", answer: ["first 1,000 days law", "first 1000 days law"] },
+    { question: "How many days of fully paid maternity leave does RA 11210 grant to working mothers?", answer: ["105 days", "105"] },
+    { question: "Which law guarantees universal access to reproductive healthcare (RA 10354)?", answer: ["responsible parenthood and reproductive health act", "rh law", "reproductive health law"] },
+    { question: "Which law mandates lactation stations in public and private workplaces (RA 10028)?", answer: ["expanded breastfeeding promotion act"] },
+    { question: "Which law provides enhanced support for single parents (RA 11861)?", answer: ["expanded solo parents welfare act", "solo parents welfare act"] },
+    { question: "Which law guarantees non-discrimination and safeguards the rights of women (RA 9710)?", answer: ["magna carta of women"] },
+    { question: "Which law passed in 2022 simplified and expedited the legal adoption process in the Philippines?", answer: ["ra 11642", "republic act 11642"] }
+];
+
+let currentQuestionIndex = 0;
+let score = 0;
+let answered = false;
+
+const questionText = document.getElementById('question-text');
+const userInput = document.getElementById('user-input');
+const feedbackMessage = document.getElementById('feedback-message');
+const submitBtn = document.getElementById('submit-btn');
+const nextBtn = document.getElementById('next-btn');
+const progressFill = document.getElementById('progress-fill');
+const questionCounter = document.getElementById('question-counter');
+
+function loadQuestion() {
+    answered = false;
+    userInput.value = '';
+    userInput.disabled = false;
+    submitBtn.disabled = false;
+    nextBtn.disabled = true;
+    feedbackMessage.style.display = 'none';
+    feedbackMessage.className = 'feedback-message';
+
+    const q = quizData[currentQuestionIndex];
+    questionText.textContent = `${currentQuestionIndex + 1}. ${q.question}`;
+
+    questionCounter.textContent = `Question ${currentQuestionIndex + 1} of ${quizData.length}`;
+    progressFill.style.width = `${((currentQuestionIndex) / quizData.length) * 100}%`;
+    userInput.focus();
+}
+
+function checkAnswer() {
+    if (answered) return;
+
+    const userVal = userInput.value.trim().toLowerCase();
+    if (!userVal) return;
+
+    const validAnswers = quizData[currentQuestionIndex].answer;
+    const isCorrect = validAnswers.some(ans => userVal === ans.toLowerCase());
+
+    answered = true;
+    userInput.disabled = true;
+    submitBtn.disabled = true;
+    nextBtn.disabled = false;
+
+    feedbackMessage.style.display = 'block';
+
+    if (isCorrect) {
+        score++;
+        feedbackMessage.textContent = "Correct!";
+        feedbackMessage.classList.add('feedback-correct');
+    } else {
+        feedbackMessage.textContent = `Incorrect! Acceptable answer: "${validAnswers[0]}"`;
+        feedbackMessage.classList.add('feedback-incorrect');
+    }
+}
+
+function nextQuestion() {
+    currentQuestionIndex++;
+    if (currentQuestionIndex < quizData.length) {
+        loadQuestion();
+    } else {
+        showResults();
+    }
+}
+
+function showResults() {
+    document.getElementById('quiz-screen').style.display = 'none';
+    document.getElementById('results-screen').style.display = 'block';
+    document.getElementById('final-score').textContent = `${score} / ${quizData.length}`;
+    
+    const percentage = (score / quizData.length) * 100;
+    let feedback = "";
+    if (percentage >= 90) feedback = "Mastery Level! Exceptional recall of terms!";
+    else if (percentage >= 75) feedback = "Great job! Strong knowledge of MAPEH definitions.";
+    else if (percentage >= 50) feedback = "Good effort! Practice spelling and review the missed terms.";
+    else feedback = "Keep studying! Re-read the reviewer terms and try again.";
+    
+    document.getElementById('feedback-text').textContent = feedback;
+}
+
+function restartQuiz() {
+    currentQuestionIndex = 0;
+    score = 0;
+    document.getElementById('results-screen').style.display = 'none';
+    document.getElementById('quiz-screen').style.display = 'block';
+    loadQuestion();
+}
+
+// Allow Enter key to submit or move to next
+userInput.addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        if (!answered) {
+            checkAnswer();
+        } else {
+            nextQuestion();
+        }
+    }
+});
+
+loadQuestion();
+</script>
+</body>
+</html>
